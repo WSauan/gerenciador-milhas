@@ -1,14 +1,17 @@
 package br.com.milhas.gerenciador.model;
 
 import java.math.BigDecimal;
+import java.util.List;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
+import jakarta.persistence.Entity; // 1. IMPORTAR A LISTA
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
@@ -24,10 +27,13 @@ public class Cartao {
     private Long id;
 
     @Column(nullable = false)
-    private String nome; // Ex: "Meu Visa Infinite"
+    private String nome;
 
     @Column(nullable = false)
-    private BigDecimal saldoDePontos; // Conforme requisito: "Controlar o saldo atual de pontos"
+    private BigDecimal saldoDePontos;
+
+    @Column(nullable = false)
+    private BigDecimal fatorConversao;
 
     // --- RELACIONAMENTOS ---
 
@@ -42,4 +48,9 @@ public class Cartao {
     @ManyToOne
     @JoinColumn(name = "programa_id", nullable = false)
     private ProgramaDePontos programaDePontos;
+
+    // --- NOVO RELACIONAMENTO ADICIONADO ---
+    // Um Cartão pode ter muitas Aquisições
+    @OneToMany(mappedBy = "cartao", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Aquisicao> aquisicoes;
 }

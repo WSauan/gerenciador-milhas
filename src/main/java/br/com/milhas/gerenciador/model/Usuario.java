@@ -1,8 +1,15 @@
 package br.com.milhas.gerenciador.model;
 
+import java.util.Collection;
+import java.util.List;
+
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
-import jakarta.persistence.Entity; // Importar a classe List
+import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -10,17 +17,12 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
-import java.util.Collection;
-import java.util.List;
 
 @Entity
 @Table(name = "usuarios")
 @Getter
 @Setter
-public class Usuario implements UserDetails {
+public class Usuario implements UserDetails { // Implementa UserDetails para o Spring Security
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -35,27 +37,29 @@ public class Usuario implements UserDetails {
     @Column(nullable = false)
     private String senha;
 
-    // --- NOVO TRECHO ADICIONADO ---
+    // Relacionamento: Um usuário pode ter muitos cartões
     @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Cartao> cartoes;
 
+    // --- MÉTODOS OBRIGATÓRIOS DO USERDETAILS ---
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        // 2. Define os papéis (perfis) do usuário. Por enquanto, todos são "USER".
+        // Define os papéis (perfis) do usuário. Por enquanto, todos são "USER".
         return List.of(new SimpleGrantedAuthority("ROLE_USER"));
     }
 
     @Override
     public String getPassword() {
-        return this.senha; // Retorna a senha (já criptografada)
+        return this.senha; // Retorna a senha (criptografada)
     }
 
     @Override
     public String getUsername() {
-        return this.email; // O "username" para o Spring será o nosso e-mail
+        return this.email; // O "username" para o Spring Security será o nosso e-mail
     }
 
-    // 3. Métodos de controle de conta. Por enquanto, deixaremos todos como 'true'.
+    // Métodos de controle de conta. Deixamos 'true' para indicar que as contas estão ativas.
     @Override
     public boolean isAccountNonExpired() {
         return true;
