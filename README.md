@@ -71,3 +71,17 @@ Crie um banco de dados no PostgreSQL com o nome `milhas_db`:
 
 ```sql
 CREATE DATABASE milhas_db;
+
+### Passo 2: Configuração da Aplicação
+
+Verifique o arquivo src/main/resources/application.properties e ajuste seu usuário e senha do banco, se necessário:
+
+    spring.datasource.username=postgres
+    spring.datasource.password=sua_senha_aqui
+
+### Passo 3: Rodar a Aplicação
+
+execute através da sua IDE (VS Code, IntelliJ, Eclipse) rodando a classe GerenciadorMilhasApplication.java
+
+
+
