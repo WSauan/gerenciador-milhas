@@ -1,36 +1,57 @@
 package br.com.milhas.gerenciador.service;
 
-import br.com.milhas.gerenciador.model.Usuario;
-import br.com.milhas.gerenciador.repository.UsuarioRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Autowired; // 1. IMPORTAR
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-@Service // 1. Anotação que define esta classe como um componente de Serviço
+import br.com.milhas.gerenciador.dto.UsuarioAtualizacaoDTO;
+import br.com.milhas.gerenciador.model.Usuario;
+import br.com.milhas.gerenciador.repository.UsuarioRepository; // 2. IMPORTAR
+
+@Service
 public class UsuarioService {
 
-    // 2. Injeção de dependência: O Spring vai nos dar uma instância do Repository
     @Autowired
     private UsuarioRepository usuarioRepository;
 
-    // Injeta o codificador de senhas que configuramos na classe SecurityConfig
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    // 3. Método com a lógica de negócio para cadastrar um novo usuário
+    // --- Método que já existia ---
     public Usuario cadastrar(Usuario usuario) {
-        // REGRA DE NEGÓCIO 1: Verificar se o e-mail já está em uso
         if (usuarioRepository.findByEmail(usuario.getEmail()).isPresent()) {
-            // Se o Optional retornado não for vazio, significa que já existe um usuário
             throw new RuntimeException("E-mail já cadastrado.");
         }
-
-        // REGRA DE NEGÓCIO 2: Criptografar a senha antes de salvar no banco
-        // Pega a senha que veio do formulário ("123") e a transforma em um hash seguro
+        
         String senhaCriptografada = passwordEncoder.encode(usuario.getSenha());
         usuario.setSenha(senhaCriptografada);
-
-        // 4. Salva o novo usuário (agora com a senha criptografada) no banco
+        
         return usuarioRepository.save(usuario);
+    }
+
+    // --- 3. NOVO MÉTODO ADICIONADO ---
+    /**
+     * Atualiza o nome do usuário logado.
+     * @param emailUsuarioLogado O e-mail do usuário (vindo do token).
+     * @param dto Os dados de atualização (contendo o novo nome).
+     * @return O objeto Usuario atualizado.
+     */
+    @Transactional // Garante que a operação seja atômica (ou tudo ou nada)
+    public Usuario atualizarPerfil(String emailUsuarioLogado, UsuarioAtualizacaoDTO dto) {
+        
+        // 1. Busca o usuário no banco
+        Usuario usuario = usuarioRepository.findByEmail(emailUsuarioLogado)
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+
+        // 2. Valida se o novo nome não está vazio
+        if (dto.nome() != null && !dto.nome().isBlank()) {
+            usuario.setNome(dto.nome());
+        }
+        
+        // 3. O Spring Data JPA/Hibernate salva a alteração automaticamente
+        //    ao final do método, graças ao @Transactional.
+        //    (Mas poderíamos chamar usuarioRepository.save(usuario) explicitamente se quiséssemos)
+        return usuario;
     }
 }
