@@ -82,4 +82,140 @@ spring.datasource.password=sua_senha_aqui
 
 ### Passo 3: Rodar a Aplicação
 
-execute através da sua IDE (VS Code, IntelliJ, Eclipse) rodando a classe GerenciadorMilhasApplication.java
+execute através da sua IDE (VS Code, IntelliJ, Eclipse) rodando a classe GerenciadorMilhasApplication.java ou via terminal na raiz do projeto:
+mvn spring-boot:run
+
+## 📚 Documentação e Testes (Swagger UI)
+
+A API possui documentação interativa via **Swagger/OpenAPI**. Você pode testar todos os endpoints diretamente pelo navegador, sem instalar nada.
+
+👉 **Acesse:** [http://localhost:8080/swagger-ui/index.html](http://localhost:8080/swagger-ui/index.html)
+
+### 🧪 Roteiro de Teste Completo (Passo a Passo)
+
+Siga esta ordem para demonstrar todas as funcionalidades do sistema pois maioria dos endpoints é protegida
+
+#### 1. Autenticação e Cadastro
+
+* Abra `usuario-controller` > `POST /api/usuarios`.
+* Clique em **Try it out**.
+* Cole o JSON abaixo e clique em **Execute**:
+
+    ```json
+    {
+      "nome": "Usuario Demo",
+      "email": "demo@teste.com",
+      "senha": "123"
+    }
+    ```
+
+* Abra `autenticacao-controller` > `POST /api/login`.
+* Clique em **Try it out**.
+* Cole o JSON abaixo e clique em **Execute**:
+
+    ```json
+    {
+      "email": "demo@teste.com",
+      "senha": "123"
+    }
+    ```
+
+* **Copie o token** gerado no corpo da resposta (a string longa dentro de `"token": "..."`).
+
+#### 2. Autorizar (Liberar Cadeado)
+
+* Role até o topo da página e clique no botão verde **Authorize** (🔓).
+* No campo *Value*, digite: `Bearer` seguido do token colado.
+  * *Exemplo:* `Bearer eyJhbGciOiJIUzI1Ni...`
+* Clique em **Authorize** e depois em **Close**.
+* 🔒 Os cadeados ao lado dos endpoints ficarão fechados.
+
+#### 3. Configuração de Cartões
+
+* **Cadastrar Bandeira:** Vá em `bandeira-controller` > `POST` e execute:
+
+    ```json
+    { "nome": "Visa" }
+    ```
+
+* **Cadastrar Programa:** Vá em `programa-de-pontos-controller` > `POST` e execute:
+
+    ```json
+    { "nome": "Livelo" }
+    ```
+
+* **Cadastrar Cartão:** Vá em `cartao-controller` > `POST`. Observe o `fatorConversao` (multiplicador). Use os IDs gerados (geralmente 1):
+
+    ```json
+    {
+      "nome": "Visa Infinite Demo",
+      "saldoDePontos": 0,
+      "fatorConversao": 2.5,
+      "bandeiraId": 1,
+      "programaId": 1
+    }
+    ```
+
+#### 4. Registro de Aquisição (Com Upload)
+
+Teste o endpoint `multipart/form-data` que calcula pontos automaticamente:
+
+* Vá em `aquisicao-controller` > `POST /api/aquisicoes`.
+* No campo **`aquisicao`** (JSON), cole:
+
+    ```json
+    {
+      "descricao": "Compra Notebook",
+      "valorGasto": 1000,
+      "dataCompra": "2025-11-01",
+      "dataPrevistaCredito": "2025-12-01",
+      "cartaoId": 1
+    }
+    ```
+
+* No campo **`comprovante`**, clique no botão para selecionar um arquivo PDF ou Imagem do seu computador.
+* Clique em **Execute**.
+* **Verifique a resposta:** O sistema deve retornar `pontosCalculados: 2500` (1000 * 2.5).
+
+#### 5. Dashboard e Relatórios
+
+Visualize os dados gerados e teste o download:
+
+* **Pontos por Cartão:** Vá em `dashboard-controller` > `GET /api/dashboard/pontos-por-cartao` e clique em **Execute**.
+* **Prazo Médio:** Vá em `dashboard-controller` > `GET /api/dashboard/prazo-medio-recebimento` e clique em **Execute**.
+* **Baixar Relatório PDF:** Vá em `dashboard-controller` > `GET /api/dashboard/exportar-historico-pdf`.
+  * Clique em **Execute**.
+  * Clique no link **"Download file"** que aparecerá na resposta para baixar o arquivo.
+
+#### 6. Gestão de Usuário (Extras)
+
+* **Atualizar Perfil:** Vá em `usuario-controller` > `PUT /api/usuarios/perfil`.
+
+    ```json
+    { "nome": "Usuario Demo Atualizado" }
+    ```
+
+* **Recuperar Senha:**
+  * Use `POST /api/forgot-password` com o e-mail para gerar o token.
+  * Use `POST /api/reset-password` com o token gerado e a nova senha.
+
+### 🧪 Testes Automatizados
+
+* O projeto possui testes automatizados para garantir a qualidade do código.
+* Testes Unitários: Validam as regras de negócio (ex: cálculo matemático de pontos).
+* Testes de Integração: Validam o fluxo completo da API e a segurança.
+
+Para rodar os testes execute o comando:
+  **mvn test**
+
+## 📂 Estrutura do Projeto
+
+```text
+br.com.milhas.gerenciador
+├── config/          # Configurações (Swagger, Security)
+├── controller/      # Endpoints da API (RestControllers)
+├── dto/             # Objetos de transferência de dados (Records)
+├── model/           # Entidades JPA (Banco de Dados)
+├── repository/      # Interfaces de acesso a dados
+├── security/        # Filtros e Serviços de Token JWT
+└── service/         # Regras de Negócio
