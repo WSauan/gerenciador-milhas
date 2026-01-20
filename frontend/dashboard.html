@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Minhas Milhas</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="logo">✈️ Gerenciador de Milhas</div>
+        <div class="user-info">
+            <span id="userEmail">Carregando...</span>
+            <button id="btnLogout" class="btn-logout">Sair</button>
+        </div>
+    </nav>
+
+    <div class="container dashboard-container">
+        
+    <header class="dashboard-header">
+        <h1>Meus Cartões e Pontos</h1>
+        <div class="actions">
+            <a href="cadastro-cartao.html" class="btn-add" style="text-decoration: none; color: white; margin-right: 10px;">+ Novo Cartão</a>
+            
+            <a href="registro-aquisicao.html" class="btn-add" style="text-decoration: none; color: white; background-color: #17a2b8;">+ Nova Compra</a>
+        </div>
+    </header>
+
+        <div id="cardsGrid" class="cards-grid">
+            <p class="loading-text">Carregando seus dados...</p>
+        </div>
+
+    </div>
+
+    <script src="js/dashboard.js"></script>
+</body>
+</html>

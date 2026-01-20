@@ -1,0 +1,241 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background-color: #f0f2f5;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.container {
+    width: 100%;
+    max-width: 400px;
+    padding: 20px;
+}
+
+/* Estilos Gerais de Cartão (Usado no Login e Formulários) */
+.card {
+    background: white;
+    padding: 40px;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    text-align: center;
+}
+
+h2 { margin-bottom: 10px; color: #333; }
+p { margin-bottom: 20px; color: #666; }
+
+/* Formulários */
+.form-group {
+    margin-bottom: 15px;
+    text-align: left;
+}
+
+/* --- CLASSE NOVA PARA CORRIGIR DATAS LADO A LADO --- */
+.form-row {
+    display: flex;
+    gap: 15px;
+    width: 100%;
+    /* Isso garante que, se um label for maior, o input do vizinho estica ou alinha */
+    align-items: flex-end; 
+}
+
+.form-row .form-group {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column; /* Garante que o label fique em cima do input */
+}
+
+/* Força o label a ter uma altura fixa ou não quebrar linha, se preferir */
+.form-row label {
+    margin-bottom: 5px;
+    /* Opção A: Evita quebra de linha (pode cortar o texto se for muito pequeno) */
+    white-space: nowrap; 
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+/* -------------------------------------------------- */
+
+label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #444;
+}
+
+input, select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 16px;
+}
+
+button {
+    width: 100%;
+    padding: 12px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+button:hover { background-color: #0056b3; }
+
+.footer { margin-top: 20px; font-size: 14px; }
+a { color: #007bff; text-decoration: none; }
+
+/* --- Estilos do Dashboard e Navbar --- */
+
+.navbar {
+    background-color: #007bff;
+    color: white;
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    position: fixed; /* Fixa no topo */
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 100;
+    gap: 20px; /* Separa logo dos itens */
+}
+
+.logo {
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.btn-logout {
+    background: transparent;
+    border: 1px solid white;
+    padding: 5px 15px;
+    width: auto;
+}
+
+.btn-logout:hover {
+    background: rgba(255,255,255,0.2);
+}
+
+.dashboard-container {
+    max-width: 800px;
+    margin: 80px auto 30px; /* Margem superior maior por causa da navbar fixa */
+}
+
+.dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.btn-add {
+    background-color: #28a745;
+    width: auto;
+    padding: 10px 20px;
+    border-radius: 5px;
+}
+
+.btn-add:hover { background-color: #218838; }
+
+/* Grid de Cartões */
+.cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+.card-item {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    border-left: 5px solid #007bff;
+    text-align: left;
+}
+
+.card-item h3 {
+    font-size: 18px;
+    color: #555;
+    margin-bottom: 10px;
+}
+
+.card-item .pontos {
+    font-size: 24px;
+    font-weight: bold;
+    color: #007bff;
+}
+
+.loading-text { text-align: center; width: 100%; color: #666; }
+
+/* --- Estilos do Modal --- */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content {
+    background-color: white;
+    padding: 30px;
+    border-radius: 10px;
+    text-align: center;
+    width: 90%;
+    max-width: 400px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    animation: slideDown 0.3s ease-out;
+}
+
+.modal-icon {
+    font-size: 50px;
+    margin-bottom: 10px;
+}
+
+.modal h2 {
+    color: #28a745;
+    margin-bottom: 10px;
+}
+
+.btn-modal {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 20px;
+    width: 100%;
+    font-size: 16px;
+}
+
+.btn-modal:hover { background-color: #0056b3; }
+
+@keyframes slideDown {
+    from { transform: translateY(-50px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
