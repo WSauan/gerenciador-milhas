@@ -7,6 +7,7 @@ import java.math.BigDecimal;
  * "Total de Pontos por Cartão".
  */
 public record PontosPorCartaoDTO(
+        Long id,
         String nomeCartao,
         BigDecimal totalPontos
 ) {

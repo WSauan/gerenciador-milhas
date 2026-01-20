@@ -20,7 +20,7 @@ public interface CartaoRepository extends JpaRepository<Cartao, Long> {
      * @param emailUsuario O e-mail do usuário logado.
      * @return Uma lista de PontosPorCartaoDTO.
      */
-    @Query("SELECT new br.com.milhas.gerenciador.dto.PontosPorCartaoDTO(c.nome, c.saldoDePontos) " +
+    @Query("SELECT new br.com.milhas.gerenciador.dto.PontosPorCartaoDTO(c.id, c.nome, c.saldoDePontos) " +
            "FROM Cartao c " +
            "WHERE c.usuario.email = :emailUsuario")
     List<PontosPorCartaoDTO> findPontosPorCartaoByUsuarioEmail(@Param("emailUsuario") String emailUsuario);

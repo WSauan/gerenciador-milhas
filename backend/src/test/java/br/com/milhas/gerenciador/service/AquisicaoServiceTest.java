@@ -24,19 +24,19 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
-@ExtendWith(MockitoExtension.class) // Habilita o Mockito para este teste
+@ExtendWith(MockitoExtension.class)
 class AquisicaoServiceTest {
 
-    @Mock // Cria uma "mentira" (mock) do repositório
+    @Mock
     private CartaoRepository cartaoRepository;
 
-    @Mock // Cria um mock do repositório de aquisição
+    @Mock
     private AquisicaoRepository aquisicaoRepository;
 
-    @Mock // Cria um mock do serviço de arquivos
+    @Mock
     private FileStorageService fileStorageService;
 
-    @InjectMocks // Injeta os mocks acima dentro do nosso Service real
+    @InjectMocks
     private AquisicaoService aquisicaoService;
 
     @Test
@@ -52,11 +52,15 @@ class AquisicaoServiceTest {
         Usuario usuarioFake = new Usuario();
         usuarioFake.setEmail(emailUsuario);
 
-        // Criando o cartão Fake com o fator de conversão
+        // Criando o cartão Fake
         Cartao cartaoFake = new Cartao();
         cartaoFake.setId(cartaoId);
         cartaoFake.setUsuario(usuarioFake);
         cartaoFake.setFatorConversao(fatorConversao);
+        
+        // --- CORREÇÃO: Inicializar o saldo com ZERO para não dar erro ---
+        cartaoFake.setSaldoDePontos(BigDecimal.ZERO);
+        // ----------------------------------------------------------------
 
         // Criando o DTO de entrada
         AquisicaoCadastroDTO dto = new AquisicaoCadastroDTO(
@@ -70,29 +74,29 @@ class AquisicaoServiceTest {
         // Simulando o arquivo de upload
         MockMultipartFile arquivoFake = new MockMultipartFile("comprovante", "teste.pdf", "application/pdf", "bytes".getBytes());
 
-        // 2. COMPORTAMENTO DOS MOCKS (ENSINANDO O TESTE A MENTIR)
-        
-        // Quando o serviço buscar o cartão, retorne o cartaoFake
+        // 2. COMPORTAMENTO DOS MOCKS
         when(cartaoRepository.findById(cartaoId)).thenReturn(Optional.of(cartaoFake));
         
-        // Quando o serviço tentar salvar a aquisição, retorne uma aquisição com ID 1
+        // Mockamos o save do cartão para evitar problemas, já que o service agora salva o saldo
+        when(cartaoRepository.save(any(Cartao.class))).thenAnswer(i -> i.getArguments()[0]);
+
         when(aquisicaoRepository.save(any(Aquisicao.class))).thenAnswer(invocation -> {
             Aquisicao a = invocation.getArgument(0);
-            a.setId(1L); // Simula o ID gerado pelo banco
+            a.setId(1L);
             return a;
         });
 
-        // Quando tentar salvar arquivo, retorne um nome qualquer
         when(fileStorageService.storeFile(any(), any())).thenReturn("arquivo-salvo.pdf");
 
-        // 3. EXECUÇÃO (CHAMA O MÉTODO REAL)
+        // 3. EXECUÇÃO
         AquisicaoResponseDTO resultado = aquisicaoService.registrarAquisicao(dto, arquivoFake, emailUsuario);
 
-        // 4. VERIFICAÇÃO (ASSERTS)
+        // 4. VERIFICAÇÃO
         assertNotNull(resultado);
         
-        // A conta deve ser: 100.00 * 2.0 = 200.00
         BigDecimal pontosEsperados = new BigDecimal("200.00");
         
-        assertEquals(0, resultado.pontosCalculados().compareTo(pontosEsperados),        "Os pontos calculados devem ser iguais ao valor gasto multiplicado pelo fator do cartão");    }
+        // Usamos compareTo para comparar BigDecimal (evita erros de precisão decimal)
+        assertEquals(0, resultado.pontosCalculados().compareTo(pontosEsperados));
+    }
 }
