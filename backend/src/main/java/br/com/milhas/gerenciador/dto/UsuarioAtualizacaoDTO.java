@@ -5,6 +5,7 @@ package br.com.milhas.gerenciador.dto;
  * Apenas o nome pode ser alterado por este DTO.
  */
 public record UsuarioAtualizacaoDTO(
-        String nome
+        String nome,
+        String senha
 ) {
 }

@@ -29,13 +29,14 @@ document.getElementById('loginForm').addEventListener('submit', async function(e
         if (response.ok) {
             const data = await response.json();
             
-            // SUCESSO: Salvar o token no navegador
+            // SUCESSO: Salvar dados no navegador
             localStorage.setItem('token', data.token);
-            localStorage.setItem('usuarioEmail', email); // Útil para o dashboard
+            localStorage.setItem('usuarioEmail', email);
+            
+            // NOVA LINHA: Salva o nome que veio do Java
+            localStorage.setItem('usuarioNome', data.nome);
 
             alert('Login realizado com sucesso!');
-            
-            // Redirecionar para o Dashboard (vamos criar depois)
             window.location.href = 'dashboard.html';
         } else {
             // ERRO (403 Forbidden, etc)

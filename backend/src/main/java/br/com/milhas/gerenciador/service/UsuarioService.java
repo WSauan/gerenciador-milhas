@@ -2,6 +2,7 @@ package br.com.milhas.gerenciador.service;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
@@ -14,6 +15,7 @@ import br.com.milhas.gerenciador.dto.ResetSenhaDTO;
 import br.com.milhas.gerenciador.dto.SolicitacaoSenhaDTO;
 import br.com.milhas.gerenciador.dto.UsuarioAtualizacaoDTO;
 import br.com.milhas.gerenciador.dto.UsuarioCadastroDTO;
+import br.com.milhas.gerenciador.dto.UsuarioResponseDTO;
 import br.com.milhas.gerenciador.model.Usuario;
 import br.com.milhas.gerenciador.repository.UsuarioRepository;
 
@@ -27,10 +29,42 @@ public class UsuarioService {
     private PasswordEncoder passwordEncoder;
 
     @Autowired
-    private JavaMailSender mailSender; // Injeta o enviador de e-mail
+    private JavaMailSender mailSender;
 
-    // ... (métodos cadastrar, listarTodos, atualizarPerfil continuam iguais) ...
-    // Se quiser, copie eles do arquivo antigo, mas foque na mudança abaixo:
+    @Transactional
+    public Usuario cadastrar(UsuarioCadastroDTO dados) {
+        if (usuarioRepository.findByEmail(dados.email()).isPresent()) {
+            throw new RuntimeException("E-mail já cadastrado.");
+        }
+        Usuario usuario = new Usuario();
+        usuario.setNome(dados.nome());
+        usuario.setEmail(dados.email());
+        usuario.setSenha(passwordEncoder.encode(dados.senha()));
+        return usuarioRepository.save(usuario);
+    }
+
+    public java.util.List<UsuarioResponseDTO> listarTodos() {
+        return usuarioRepository.findAll().stream()
+                .map(UsuarioResponseDTO::new)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional
+        public Usuario atualizarPerfil(String email, UsuarioAtualizacaoDTO dto) {
+            Usuario usuario = usuarioRepository.findByEmail(email)
+                    .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+
+            // Só altera se não for nulo E não for vazio
+            if (dto.nome() != null && !dto.nome().isBlank()) {
+                usuario.setNome(dto.nome());
+            }
+
+            if (dto.senha() != null && !dto.senha().isBlank()) {
+                usuario.setSenha(passwordEncoder.encode(dto.senha()));
+            }
+
+            return usuario;
+        }
 
     @Transactional
     public void solicitarResetSenha(SolicitacaoSenhaDTO dto) {
@@ -44,7 +78,6 @@ public class UsuarioService {
         usuario.setResetTokenExpiry(expiryDate);
         usuarioRepository.save(usuario);
 
-        // Envia o e-mail em vez de retornar o token
         enviaEmailRecuperacao(usuario.getEmail(), token);
     }
 
@@ -53,9 +86,10 @@ public class UsuarioService {
         message.setFrom("noreply@gerenciadormilhas.com.br");
         message.setTo(emailDestino);
         message.setSubject("Recuperação de Senha - Gerenciador de Milhas");
-        
+
+        // Ajuste o link conforme seu ambiente (ex: porta 5500 do Live Server)
         String link = "http://127.0.0.1:5500/frontend/reset-password.html?token=" + token;
-        
+
         message.setText("Olá!\n\n" +
                 "Você solicitou a recuperação de senha.\n" +
                 "Clique no link abaixo para criar uma nova senha:\n\n" +
@@ -73,7 +107,6 @@ public class UsuarioService {
 
     @Transactional
     public void resetarSenha(ResetSenhaDTO dto) {
-        // ... (Mantenha a lógica de validação de senhas e token igual ao anterior) ...
         if (dto.novaSenha() == null || !dto.novaSenha().equals(dto.confirmacaoSenha())) {
             throw new RuntimeException("As senhas não coincidem.");
         }
@@ -88,34 +121,5 @@ public class UsuarioService {
         usuario.setResetToken(null);
         usuario.setResetTokenExpiry(null);
         usuarioRepository.save(usuario);
-    }
-    
-    // --- (Não esqueça de manter o método cadastrar e atualizarPerfil) ---
-    @Transactional
-    public Usuario cadastrar(UsuarioCadastroDTO dados) {
-        if (usuarioRepository.findByEmail(dados.email()).isPresent()) {
-            throw new RuntimeException("E-mail já cadastrado.");
-        }
-        Usuario usuario = new Usuario();
-        usuario.setNome(dados.nome());
-        usuario.setEmail(dados.email());
-        usuario.setSenha(passwordEncoder.encode(dados.senha()));
-        return usuarioRepository.save(usuario);
-    }
-    
-    public java.util.List<br.com.milhas.gerenciador.dto.UsuarioResponseDTO> listarTodos() {
-        return usuarioRepository.findAll().stream()
-                .map(br.com.milhas.gerenciador.dto.UsuarioResponseDTO::new)
-                .collect(java.util.stream.Collectors.toList());
-    }
-
-    @Transactional
-    public Usuario atualizarPerfil(String email, UsuarioAtualizacaoDTO dto) {
-        Usuario usuario = usuarioRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
-        if (dto.nome() != null && !dto.nome().isBlank()) {
-            usuario.setNome(dto.nome());
-        }
-        return usuario;
     }
 }

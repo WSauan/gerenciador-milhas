@@ -1,13 +1,22 @@
 package br.com.milhas.gerenciador.controller;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import br.com.milhas.gerenciador.dto.*;
+import br.com.milhas.gerenciador.dto.DadosAutenticacaoDTO;
+import br.com.milhas.gerenciador.dto.ResetSenhaDTO;
+import br.com.milhas.gerenciador.dto.SolicitacaoSenhaDTO;
+import br.com.milhas.gerenciador.dto.TokenJwtDTO;
+import br.com.milhas.gerenciador.dto.UsuarioAtualizacaoDTO;
+import br.com.milhas.gerenciador.dto.UsuarioResponseDTO;
 import br.com.milhas.gerenciador.model.Usuario;
 import br.com.milhas.gerenciador.security.TokenService;
 import br.com.milhas.gerenciador.service.UsuarioService;
@@ -29,7 +38,7 @@ public class AutenticacaoController {
         Authentication authentication = manager.authenticate(authenticationToken);
         Usuario usuarioAutenticado = (Usuario) authentication.getPrincipal();
         String tokenJWT = tokenService.gerarToken(usuarioAutenticado);
-        return ResponseEntity.ok(new TokenJwtDTO(tokenJWT));
+        return ResponseEntity.ok(new TokenJwtDTO(tokenJWT, usuarioAutenticado.getNome()));
     }
 
     // --- MUDANÇA AQUI: Não retorna mais Token, retorna Void (Vazio) ---
@@ -54,5 +63,17 @@ public class AutenticacaoController {
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().build();
         }
+    }
+@PutMapping("/perfil")
+    public ResponseEntity<UsuarioResponseDTO> atualizarPerfil(
+            @RequestBody UsuarioAtualizacaoDTO dados,
+            @AuthenticationPrincipal Usuario usuarioLogado) { // <--- A Mágica acontece aqui!
+        
+        // O "usuarioLogado" é injetado automaticamente pelo Spring Security.
+        // Se chegou aqui, é certeza que ele é quem diz ser.
+
+        Usuario usuarioAtualizado = usuarioService.atualizarPerfil(usuarioLogado.getEmail(), dados);
+
+        return ResponseEntity.ok(new UsuarioResponseDTO(usuarioAtualizado));
     }
 }
