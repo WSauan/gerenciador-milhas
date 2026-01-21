@@ -1,3 +1,4 @@
+/* --- RESET E ESTILOS GERAIS --- */
 * {
     box-sizing: border-box;
     margin: 0;
@@ -10,16 +11,20 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh;
+    min-height: 100vh; /* Garante que cubra a tela toda */
 }
 
+/* Links */
+a { color: #007bff; text-decoration: none; }
+
+/* Container Geral (Login/Cadastro) */
 .container {
     width: 100%;
     max-width: 400px;
     padding: 20px;
 }
 
-/* Estilos Gerais de Cartão (Usado no Login e Formulários) */
+/* --- CARTÕES (CARDS) --- */
 .card {
     background: white;
     padding: 40px;
@@ -31,18 +36,17 @@ body {
 h2 { margin-bottom: 10px; color: #333; }
 p { margin-bottom: 20px; color: #666; }
 
-/* Formulários */
+/* --- FORMULÁRIOS --- */
 .form-group {
     margin-bottom: 15px;
     text-align: left;
 }
 
-/* --- CLASSE NOVA PARA CORRIGIR DATAS LADO A LADO --- */
+/* Linha de Formulário (Lado a Lado) */
 .form-row {
     display: flex;
     gap: 15px;
     width: 100%;
-    /* Isso garante que, se um label for maior, o input do vizinho estica ou alinha */
     align-items: flex-end; 
 }
 
@@ -50,18 +54,15 @@ p { margin-bottom: 20px; color: #666; }
     flex: 1;
     min-width: 0;
     display: flex;
-    flex-direction: column; /* Garante que o label fique em cima do input */
+    flex-direction: column;
 }
 
-/* Força o label a ter uma altura fixa ou não quebrar linha, se preferir */
 .form-row label {
     margin-bottom: 5px;
-    /* Opção A: Evita quebra de linha (pode cortar o texto se for muito pequeno) */
     white-space: nowrap; 
     overflow: hidden;
     text-overflow: ellipsis;
 }
-/* -------------------------------------------------- */
 
 label {
     display: block;
@@ -78,6 +79,7 @@ input, select {
     font-size: 16px;
 }
 
+/* --- BOTÕES --- */
 button {
     width: 100%;
     padding: 12px;
@@ -93,10 +95,8 @@ button {
 button:hover { background-color: #0056b3; }
 
 .footer { margin-top: 20px; font-size: 14px; }
-a { color: #007bff; text-decoration: none; }
 
-/* --- Estilos do Dashboard e Navbar --- */
-
+/* --- NAVBAR (BARRA AZUL FIXA) --- */
 .navbar {
     background-color: #007bff;
     color: white;
@@ -105,12 +105,12 @@ a { color: #007bff; text-decoration: none; }
     justify-content: space-between;
     align-items: center;
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    position: fixed; /* Fixa no topo */
+    position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     z-index: 100;
-    gap: 20px; /* Separa logo dos itens */
+    gap: 20px;
 }
 
 .logo {
@@ -131,27 +131,37 @@ a { color: #007bff; text-decoration: none; }
     width: auto;
 }
 
-.btn-logout:hover {
-    background: rgba(255,255,255,0.2);
-}
+.btn-logout:hover { background: rgba(255,255,255,0.2); }
 
+/* --- LAYOUT DO DASHBOARD --- */
+
+/* Ajuste principal para evitar quebra com zoom */
 .dashboard-container {
-    max-width: 800px;
-    margin: 80px auto 30px; /* Margem superior maior por causa da navbar fixa */
+    max-width: 100%; 
+    width: 1200px;   
+    margin: 80px auto 30px; /* Margem superior para compensar a navbar */
+    padding: 20px;
+    box-sizing: border-box;
 }
 
+/* Cabeçalho do Dashboard (Flex Wrap para botões não sumirem) */
 .dashboard-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 20px;
+    flex-wrap: wrap; /* AQUI ESTÁ O SEGREDO: Se faltar espaço, quebra linha */
+    gap: 15px;
 }
 
 .btn-add {
     background-color: #28a745;
+    color: white;
+    text-decoration: none;
     width: auto;
     padding: 10px 20px;
     border-radius: 5px;
+    display: inline-block;
 }
 
 .btn-add:hover { background-color: #218838; }
@@ -159,34 +169,57 @@ a { color: #007bff; text-decoration: none; }
 /* Grid de Cartões */
 .cards-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     gap: 20px;
-}
-
-.card-item {
-    background: white;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-    border-left: 5px solid #007bff;
-    text-align: left;
-}
-
-.card-item h3 {
-    font-size: 18px;
-    color: #555;
-    margin-bottom: 10px;
-}
-
-.card-item .pontos {
-    font-size: 24px;
-    font-weight: bold;
-    color: #007bff;
 }
 
 .loading-text { text-align: center; width: 100%; color: #666; }
 
-/* --- Estilos do Modal --- */
+/* --- TABELAS E RESPONSIVIDADE (NOVA LÓGICA) --- */
+
+/* Container com Rolagem Interna (Scroll) */
+.table-scroll-container {
+    max-height: 400px; /* Limita a altura (aprox 6 a 7 linhas) */
+    overflow-y: auto;  /* Barra vertical se precisar */
+    overflow-x: auto;  /* Barra horizontal se precisar */
+    border: 1px solid #eee;
+    border-radius: 8px;
+    background: white;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 800px; /* Garante largura mínima para não espremer colunas */
+}
+
+/* Espaçamento e Bordas */
+th, td {
+    padding: 15px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+}
+
+/* Cabeçalho da Tabela Fixo (Sticky) */
+.table-scroll-container thead th {
+    position: sticky;
+    top: 0;
+    background-color: #f8f9fa; /* Fundo para não ficar transparente */
+    z-index: 2;
+    box-shadow: 0 2px 2px -1px rgba(0,0,0,0.1);
+}
+
+/* Remove borda da última linha */
+tr:last-child td { border-bottom: none; }
+
+/* Hover nas linhas */
+tbody tr:hover {
+    background-color: #f8f9fa;
+    transition: background-color 0.2s;
+}
+
+/* --- MODAL --- */
 .modal {
     display: none;
     position: fixed;
@@ -211,15 +244,8 @@ a { color: #007bff; text-decoration: none; }
     animation: slideDown 0.3s ease-out;
 }
 
-.modal-icon {
-    font-size: 50px;
-    margin-bottom: 10px;
-}
-
-.modal h2 {
-    color: #28a745;
-    margin-bottom: 10px;
-}
+.modal-icon { font-size: 50px; margin-bottom: 10px; }
+.modal h2 { color: #28a745; margin-bottom: 10px; }
 
 .btn-modal {
     background-color: #007bff;
@@ -240,26 +266,27 @@ a { color: #007bff; text-decoration: none; }
     to { transform: translateY(0); opacity: 1; }
 }
 
-* Ajustes da Tabela de Histórico */
-table {
-    width: 100%;
-    border-collapse: collapse;
-}
+/* --- RESPONSIVIDADE MOBILE --- */
+@media (max-width: 600px) {
+    .dashboard-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .dashboard-header .actions {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .dashboard-header h1 {
+        text-align: center;
+        margin-bottom: 10px;
+    }
 
-/* Aplica espaçamento tanto no Título (th) quanto nos Dados (td) */
-th, td {
-    padding: 15px; /* Aqui está a mágica: afasta o texto da parede */
-    text-align: left;
-    border-bottom: 1px solid #eee; /* Linha cinza sutil entre as compras */
-}
-
-/* Remove a borda da última linha para ficar limpo */
-tr:last-child td {
-    border-bottom: none;
-}
-
-/* Efeito visual quando passa o mouse em cima da linha */
-tbody tr:hover {
-    background-color: #f8f9fa;
-    transition: background-color 0.2s;
+    .form-row {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0;
+    }
 }

@@ -30,6 +30,22 @@ document.addEventListener('DOMContentLoaded', () => {
     carregarDados();
 });
 
+// --- FUNÇÃO AUXILIAR PARA CORRIGIR DATA (TIMEZONE BUG) ---
+function formatarDataSegura(dataString) {
+    if (!dataString) return '---';
+    
+    // Se a data vier no formato YYYY-MM-DD (padrão do Java/Banco)
+    // Nós quebramos a string e remontamos manualmente.
+    const partes = dataString.split('-'); 
+    if (partes.length === 3) {
+        // partes[0] = ano, partes[1] = mes, partes[2] = dia
+        return `${partes[2]}/${partes[1]}/${partes[0]}`;
+    }
+    
+    // Fallback: Se não for esse formato, tenta o padrão
+    return new Date(dataString).toLocaleDateString('pt-BR');
+}
+
 // --- 3. CARREGAMENTO DE DADOS ---
 async function carregarDados() {
     try {
@@ -50,7 +66,6 @@ async function carregarDados() {
         if (resCompras.ok) {
             minhasCompras = await resCompras.json();
         } else {
-            console.warn('Lista de compras vazia.');
             minhasCompras = [];
         }
 
@@ -103,13 +118,14 @@ function renderizarCartoes() {
     });
 }
 
+// --- 5. RENDERIZAÇÃO DA TABELA (ATUALIZADA) ---
 // --- 5. RENDERIZAÇÃO DA TABELA ---
 function renderizarTabela() {
     const tbody = document.getElementById('tabelaHistorico');
     tbody.innerHTML = '';
 
     if (minhasCompras.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 20px; color: #888;">Nenhuma compra registrada.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 20px; color: #888;">Nenhuma compra registrada.</td></tr>';
         return;
     }
 
@@ -117,41 +133,63 @@ function renderizarTabela() {
 
     listaOrdenada.forEach(compra => {
         const valorFormatado = (compra.valorGasto || 0).toFixed(2);
-        const dataFormatada = new Date(compra.dataCompra).toLocaleDateString();
+        const dataCompra = formatarDataSegura(compra.dataCompra);
+        const dataCredito = compra.dataCredito ? formatarDataSegura(compra.dataCredito) : '---';
+        
+        // --- LÓGICA DE CORES DA BADGE ---
+        let badgeClass = '';
+        let badgeStyle = '';
+        
+        if (compra.status === 'APROVADO') {
+            // Verde
+            badgeStyle = 'background:#e8f5e9; color:#2e7d32;';
+        } else if (compra.status === 'PENDENTE') {
+            // Amarelo/Laranja
+            badgeStyle = 'background:#fff3cd; color:#856404;';
+        } else {
+            // Cinza ou Vermelho (Cancelado)
+            badgeStyle = 'background:#f8d7da; color:#721c24;';
+        }
 
         const tr = document.createElement('tr');
         tr.innerHTML = `
-            <td>${dataFormatada}</td>
+            <td>${dataCompra}</td>
+            <td style="color: #666; font-size: 0.95em;">${dataCredito}</td>
             <td>${compra.descricao}</td>
             <td>${compra.nomeCartao || '---'}</td>
             <td>R$ ${valorFormatado}</td>
             <td style="color: #28a745; font-weight: bold;">+${compra.pontosCalculados || 0}</td>
-            <td><span class="badge" style="background:#e8f5e9; color:#2e7d32; padding:4px 8px; border-radius:4px; font-size:12px;">${compra.status || 'APROVADO'}</span></td>
+            
+            <td><span class="badge" style="padding:4px 8px; border-radius:4px; font-size:12px; ${badgeStyle}">${compra.status}</span></td>
+            
+            <td style="text-align: center;">
+                <button onclick="excluirCompra(${compra.id})" title="Excluir Compra"
+                        style="background: none; border: none; cursor: pointer; color: #dc3545; font-size: 1.1em;">
+                    ❌
+                </button>
+            </td>
         `;
         tbody.appendChild(tr);
     });
 }
 
-// --- 6. KPIs (Cálculo Real) ---
+// --- 6. KPIs ---
 function atualizarKPIs() {
     const kpiElement = document.getElementById('kpiPrazo');
-    
     if (minhasCompras.length < 2) {
         kpiElement.textContent = "---";
         return;
     }
-
     const sorted = [...minhasCompras].sort((a, b) => new Date(a.dataCompra) - new Date(b.dataCompra));
     const primeiraData = new Date(sorted[0].dataCompra);
     const ultimaData = new Date(sorted[sorted.length - 1].dataCompra);
     const diferencaTempo = Math.abs(ultimaData - primeiraData);
     const diferencaDias = Math.ceil(diferencaTempo / (1000 * 60 * 60 * 24));
     const media = diferencaDias / (minhasCompras.length - 1);
-    
     kpiElement.textContent = `${media.toFixed(1)} dias`;
 }
 
-// --- 7. EXCLUSÃO ---
+// --- 7. AÇÕES DE EXCLUSÃO ---
 async function excluirCartao(id) {
     if (confirm('⚠️ Tem certeza? Ao excluir o cartão, o histórico de pontos dele também será afetado.')) {
         try {
@@ -159,76 +197,61 @@ async function excluirCartao(id) {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${token}` }
             });
-
-            if (response.ok) {
-                alert('Cartão excluído!');
-                carregarDados(); 
-            } else {
-                alert('Erro ao excluir.');
-            }
-        } catch (error) {
-            console.error(error);
-            alert('Erro de conexão.');
-        }
+            if (response.ok) { alert('Cartão excluído!'); carregarDados(); } 
+            else { alert('Erro ao excluir cartão.'); }
+        } catch (error) { console.error(error); alert('Erro de conexão.'); }
     }
 }
 
-// --- 8. EXPORTAÇÃO (PDF ATUALIZADO) ---
+async function excluirCompra(id) {
+    if (confirm('Deseja realmente excluir esta compra? Os pontos serão estornados do cartão.')) {
+        try {
+            const response = await fetch(`${API_URL}/aquisicoes/${id}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (response.ok) { carregarDados(); } 
+            else { alert('Erro ao excluir compra.'); }
+        } catch (error) { console.error(error); alert('Erro de conexão.'); }
+    }
+}
+
+// --- 8. EXPORTAÇÃO ---
 
 function baixarPDF() {
     if (!window.jspdf) {
         alert("Erro: Biblioteca de PDF não carregada.");
         return;
     }
-
     const { jsPDF } = window.jspdf;
-    // Configura orientação 'landscape' (deitada) para caber todas as colunas
     const doc = new jsPDF('landscape');
 
-    // Cabeçalho do PDF
     doc.setFontSize(18);
     doc.text("Relatório Detalhado de Milhas", 14, 20);
     doc.setFontSize(10);
     doc.text(`Gerado em: ${new Date().toLocaleDateString()} às ${new Date().toLocaleTimeString()}`, 14, 28);
 
-    // Definição das Colunas (Igual ao que você preencheu no cadastro)
-    const colunas = [
-        "Data Compra", 
-        "Data Crédito", 
-        "Descrição", 
-        "Cartão", 
-        "Valor (R$)", 
-        "Pontos", 
-        "Status"
-    ];
-    
+    const colunas = ["Data Compra", "Data Crédito", "Descrição", "Cartão", "Valor (R$)", "Pontos", "Status"];
     const linhas = [];
 
-    // Preenche as linhas
     minhasCompras.forEach(compra => {
-        // Formata Data Compra
-        const dataCompra = new Date(compra.dataCompra).toLocaleDateString('pt-BR');
+        const dCompra = formatarDataSegura(compra.dataCompra);
+        const dCredito = compra.dataCredito ? formatarDataSegura(compra.dataCredito) : '---';
         
-        // Formata Data Crédito (se existir, senão põe traço)
-        const dataCredito = compra.dataCredito 
-            ? new Date(compra.dataCredito).toLocaleDateString('pt-BR') 
-            : '---';
-
         const valor = (compra.valorGasto || 0).toFixed(2).replace('.', ',');
         const cartao = compra.nomeCartao || '---';
         const pontos = compra.pontosCalculados || 0;
         const status = compra.status || '---';
         
-        linhas.push([dataCompra, dataCredito, compra.descricao, cartao, valor, pontos, status]);
+        linhas.push([dCompra, dCredito, compra.descricao, cartao, valor, pontos, status]);
     });
 
-    // Gera a tabela
     doc.autoTable({
         head: [colunas],
         body: linhas,
         startY: 35,
         theme: 'grid',
-        styles: { fontSize: 9 }, // Fonte um pouco menor para caber tudo
+        styles: { fontSize: 9 },
         headStyles: { fillColor: [23, 162, 184] }
     });
 
@@ -240,14 +263,13 @@ function baixarCSV() {
         alert("Sem dados para exportar.");
         return;
     }
-
-    // Adicionado Data Credito e Status no CSV também
     let csvContent = "data:text/csv;charset=utf-8,";
     csvContent += "Data Compra;Data Credito;Descricao;Cartao;Valor;Pontos;Status\n";
 
     minhasCompras.forEach(compra => {
-        const dCompra = new Date(compra.dataCompra).toLocaleDateString();
-        const dCredito = compra.dataCredito ? new Date(compra.dataCredito).toLocaleDateString() : '';
+        const dCompra = formatarDataSegura(compra.dataCompra);
+        const dCredito = compra.dataCredito ? formatarDataSegura(compra.dataCredito) : '';
+        
         const val = (compra.valorGasto || 0).toString().replace('.',',');
         const pts = compra.pontosCalculados || 0;
         const status = compra.status || '';

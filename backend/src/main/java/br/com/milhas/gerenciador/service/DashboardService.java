@@ -1,10 +1,16 @@
 package br.com.milhas.gerenciador.service;
 // classe de serviço responsável por agregar dados para o Dashboard e gerar relatórios.
-import br.com.milhas.gerenciador.dto.AquisicaoResponseDTO;
-import br.com.milhas.gerenciador.dto.PontosPorCartaoDTO;
-import br.com.milhas.gerenciador.dto.PrazoMedioDTO;
-import br.com.milhas.gerenciador.repository.AquisicaoRepository;
-import br.com.milhas.gerenciador.repository.CartaoRepository;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.Writer;
+import java.math.BigDecimal;
+import java.util.List;
+
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVPrinter;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.kernel.pdf.PdfWriter;
 import com.itextpdf.layout.Document;
@@ -12,17 +18,13 @@ import com.itextpdf.layout.element.Cell;
 import com.itextpdf.layout.element.Paragraph;
 import com.itextpdf.layout.element.Table;
 import com.itextpdf.layout.properties.UnitValue;
-import jakarta.servlet.http.HttpServletResponse;
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVPrinter;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.Writer;
-import java.math.BigDecimal;
-import java.util.List;
+import br.com.milhas.gerenciador.dto.AquisicaoResponseDTO;
+import br.com.milhas.gerenciador.dto.PontosPorCartaoDTO;
+import br.com.milhas.gerenciador.dto.PrazoMedioDTO;
+import br.com.milhas.gerenciador.repository.AquisicaoRepository;
+import br.com.milhas.gerenciador.repository.CartaoRepository;
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * Serviço responsável por agregar dados para o Dashboard e gerar relatórios.
@@ -77,7 +79,7 @@ public class DashboardService {
         for (AquisicaoResponseDTO aquisicao : historico) {
             csvPrinter.printRecord(
                 aquisicao.id(), aquisicao.descricao(), aquisicao.valorGasto(),
-                aquisicao.pontosCalculados(), aquisicao.dataCompra(), aquisicao.dataPrevistaCredito(),
+                aquisicao.pontosCalculados(), aquisicao.dataCompra(), aquisicao.dataCredito(),
                 aquisicao.status(), aquisicao.cartaoId(), aquisicao.nomeCartao()
             );
         }
@@ -117,7 +119,7 @@ public class DashboardService {
             table.addCell(new Cell().add(new Paragraph(aquisicao.valorGasto().toString())));
             table.addCell(new Cell().add(new Paragraph(aquisicao.pontosCalculados().toString())));
             table.addCell(new Cell().add(new Paragraph(aquisicao.dataCompra().toString())));
-            table.addCell(new Cell().add(new Paragraph(aquisicao.dataPrevistaCredito().toString())));
+            table.addCell(new Cell().add(new Paragraph(aquisicao.dataCredito().toString())));
             table.addCell(new Cell().add(new Paragraph(aquisicao.status())));
             table.addCell(new Cell().add(new Paragraph(aquisicao.cartaoId().toString())));
             table.addCell(new Cell().add(new Paragraph(aquisicao.nomeCartao())));

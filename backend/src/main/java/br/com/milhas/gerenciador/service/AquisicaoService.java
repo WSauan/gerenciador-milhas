@@ -1,5 +1,14 @@
 package br.com.milhas.gerenciador.service;
 
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+
 import br.com.milhas.gerenciador.dto.AquisicaoCadastroDTO;
 import br.com.milhas.gerenciador.dto.AquisicaoResponseDTO;
 import br.com.milhas.gerenciador.model.Aquisicao;
@@ -7,14 +16,6 @@ import br.com.milhas.gerenciador.model.Cartao;
 import br.com.milhas.gerenciador.model.StatusCredito;
 import br.com.milhas.gerenciador.repository.AquisicaoRepository;
 import br.com.milhas.gerenciador.repository.CartaoRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Classe responsável por gerenciar as aquisições de milhas, incluindo registro,
@@ -98,5 +99,18 @@ public class AquisicaoService {
         return aquisicoes.stream()
                 .map(AquisicaoResponseDTO::new)
                 .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public void excluir(Long id) {
+        Aquisicao aquisicao = aquisicaoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Compra não encontrada"));
+
+        // 1. Estorna os pontos do cartão (Usando .subtract para BigDecimal)
+        Cartao cartao = aquisicao.getCartao();
+        cartao.setSaldoDePontos(cartao.getSaldoDePontos().subtract(aquisicao.getPontosCalculados()));
+        cartaoRepository.save(cartao);
+        // 2. Deleta a compra
+        aquisicaoRepository.delete(aquisicao);
     }
 }
