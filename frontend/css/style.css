@@ -239,3 +239,27 @@ a { color: #007bff; text-decoration: none; }
     from { transform: translateY(-50px); opacity: 0; }
     to { transform: translateY(0); opacity: 1; }
 }
+
+* Ajustes da Tabela de Histórico */
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+/* Aplica espaçamento tanto no Título (th) quanto nos Dados (td) */
+th, td {
+    padding: 15px; /* Aqui está a mágica: afasta o texto da parede */
+    text-align: left;
+    border-bottom: 1px solid #eee; /* Linha cinza sutil entre as compras */
+}
+
+/* Remove a borda da última linha para ficar limpo */
+tr:last-child td {
+    border-bottom: none;
+}
+
+/* Efeito visual quando passa o mouse em cima da linha */
+tbody tr:hover {
+    background-color: #f8f9fa;
+    transition: background-color 0.2s;
+}

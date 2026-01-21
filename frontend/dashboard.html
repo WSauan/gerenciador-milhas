@@ -18,17 +18,54 @@
 
     <div class="container dashboard-container">
         
-    <header class="dashboard-header">
-        <h1>Meus Cartões e Pontos</h1>
-        <div class="actions">
-            <a href="cadastro-cartao.html" class="btn-add" style="text-decoration: none; color: white; margin-right: 10px;">+ Novo Cartão</a>
-            
-            <a href="registro-aquisicao.html" class="btn-add" style="text-decoration: none; color: white; background-color: #17a2b8;">+ Nova Compra</a>
+        <header class="dashboard-header">
+            <h1>Meus Cartões e Pontos</h1>
+            <div class="actions">
+                <a href="cadastro-cartao.html" class="btn-add" style="text-decoration: none; color: white; margin-right: 10px;">+ Novo Cartão</a>
+                <a href="registro-aquisicao.html" class="btn-add" style="text-decoration: none; color: white; background-color: #17a2b8;">+ Nova Compra</a>
+            </div>
+        </header>
+
+        <div style="background: white; padding: 20px; border-radius: 10px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+            <div>
+                <h3 style="margin-bottom: 5px; color: #555;">📊 Relatórios</h3>
+                <p style="font-size: 14px; color: #888;">Exporte seu histórico de compras</p>
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <button onclick="baixarPDF()" style="background-color: #dc3545; width: auto; padding: 8px 15px; font-size: 14px; border: none; border-radius: 5px; color: white; cursor: pointer;">
+                    📄 Baixar PDF
+                </button>
+                <button onclick="baixarCSV()" style="background-color: #28a745; width: auto; padding: 8px 15px; font-size: 14px; border: none; border-radius: 5px; color: white; cursor: pointer;">
+                    📊 Baixar CSV
+                </button>
+            </div>
         </div>
-    </header>
+        
+        <div style="text-align: right; margin-bottom: 10px; color: #666; font-size: 0.9em;">
+            Prazo médio de recebimento: <strong id="kpiPrazo" style="color: #007bff;">Calculando...</strong>
+        </div>
 
         <div id="cardsGrid" class="cards-grid">
             <p class="loading-text">Carregando seus dados...</p>
+        </div>
+
+        <h2 style="margin-top: 40px; margin-bottom: 15px; color: #333;">Histórico Recente</h2>
+        <div class="card" style="padding: 0; overflow: hidden; margin-bottom: 50px;">
+            <table style="width: 100%; border-collapse: collapse; text-align: left;">
+                <thead style="background-color: #f8f9fa; border-bottom: 2px solid #eee;">
+                    <tr>
+                        <th style="padding: 15px; color: #555;">Data</th>
+                        <th style="padding: 15px; color: #555;">Descrição</th>
+                        <th style="padding: 15px; color: #555;">Cartão</th>
+                        <th style="padding: 15px; color: #555;">Valor</th>
+                        <th style="padding: 15px; color: #555;">Pontos</th>
+                        <th style="padding: 15px; color: #555;">Status</th>
+                    </tr>
+                </thead>
+                <tbody id="tabelaHistorico">
+                    <tr><td colspan="6" style="padding: 20px; text-align: center;">Carregando...</td></tr>
+                </tbody>
+            </table>
         </div>
 
     </div>
