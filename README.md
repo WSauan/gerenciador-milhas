@@ -121,15 +121,23 @@ Você pode testar o sistema de duas formas:
 
 ### Opção A: Via Frontend (Recomendada)
 
-Acesse `index.html`, crie uma conta e utilize o sistema visualmente. É a forma mais completa de ver as regras de cores (Status Pendente/Aprovado) e gráficos funcionando.
+Acesse `index.html` no navegador. É a forma mais completa de ver as regras de cores e gráficos funcionando.
+
+**Roteiro de Teste Visual:**
+
+1. **Cadastro/Login:** Crie uma conta nova e faça login.
+
+2. **Esqueci a Senha:**
+   * Clique em "Esqueci minha senha" na tela de login e digite seu e-mail.
+   * **IMPORTANTE:** Acesse o **[Mailtrap.io](https://mailtrap.io)** (ou o e-mail configurado) para visualizar o token enviado.
+   * Copie o token do e-mail e use na tela de redefinição.
+3. **Uso Geral:** Cadastre cartões, lance compras com datas futuras/passadas e baixe os relatórios.
 
 ### Opção B: Via Swagger UI (Para Desenvolvedores)
 
 Acesse: [http://localhost:8080/swagger-ui/index.html](http://localhost:8080/swagger-ui/index.html)
 
-#### Roteiro de Teste Atualizado (Swagger)
-
-Como o sistema agora envia e-mails e possui dados iniciais, o fluxo mudou levemente:
+**Roteiro de Teste Técnico:**
 
 1. **Login (Autenticação):**
    * Use o endpoint `POST /api/login`.
@@ -142,7 +150,7 @@ Como o sistema agora envia e-mails e possui dados iniciais, o fluxo mudou leveme
 
 3. **Recuperação de Senha (Fluxo de E-mail):**
    * Chame `POST /api/forgot-password` com seu e-mail.
-   * **Verifique seu E-mail (ou o console/log da aplicação):** O token não vem mais no corpo da resposta JSON por segurança, ele é enviado para o "Email Service". Pegue o token lá.
+   * **Verifique seu E-mail (ou o console/log da aplicação):** O token não vem mais no corpo da resposta JSON por segurança.
    * Chame `POST /api/reset-password` com o token recebido.
 
 4. **Verificar Status Dinâmico:**
