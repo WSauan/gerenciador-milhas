@@ -98,7 +98,7 @@ function renderizarCartoes() {
         div.innerHTML = `
             <div style="display: flex; justify-content: space-between; align-items: start;">
                 <h3 style="margin: 0; color: #555; font-size: 1.1em;">${cartao.nome}</h3>
-                <button onclick="excluirCartao(${cartao.id})" title="Excluir Cartão" 
+                <button onclick="excluirCartao(${cartao.id})" title="Excluir Cartão"
                         style="background: none; border: none; cursor: pointer; font-size: 1.2em;">
                     🗑️
                 </button>
@@ -110,7 +110,7 @@ function renderizarCartoes() {
             
             <div style="margin-top: 15px;">
                 <span style="font-size: 22px; font-weight: bold; color: #007bff;">
-                    ${pontosDoCartao.toLocaleString('pt-BR')} pts
+                    ${pontosDoCartao.toLocaleString('pt-BR')} Pontos
                 </span>
             </div>
         `;
