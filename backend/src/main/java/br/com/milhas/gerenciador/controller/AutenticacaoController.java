@@ -34,23 +34,24 @@ public class AutenticacaoController {
 
     @PostMapping("/login")
     public ResponseEntity<TokenJwtDTO> efetuarLogin(@RequestBody DadosAutenticacaoDTO dados) {
-        var authenticationToken = new UsernamePasswordAuthenticationToken(dados.email(), dados.senha());
+        
+        String emailPadronizado = dados.email().toLowerCase();
+
+        var authenticationToken = new UsernamePasswordAuthenticationToken(emailPadronizado, dados.senha());
         Authentication authentication = manager.authenticate(authenticationToken);
         Usuario usuarioAutenticado = (Usuario) authentication.getPrincipal();
         String tokenJWT = tokenService.gerarToken(usuarioAutenticado);
         return ResponseEntity.ok(new TokenJwtDTO(tokenJWT, usuarioAutenticado.getNome()));
     }
 
-    // --- MUDANÇA AQUI: Não retorna mais Token, retorna Void (Vazio) ---
     @PostMapping("/forgot-password")
     public ResponseEntity<Void> solicitarResetSenha(@RequestBody SolicitacaoSenhaDTO dto) {
         try {
+            // A conversão para minúsculo já está sendo feita dentro do usuarioService.solicitarResetSenha
             usuarioService.solicitarResetSenha(dto);
-            // Retorna 200 OK sempre. O usuário verifica o e-mail.
             return ResponseEntity.ok().build();
         } catch (RuntimeException e) {
-            // Para testes: Pode retornar erro. 
-            // Em produção: Ideal retornar OK para não vazar e-mails cadastrados.
+            // Retorna erro 400 se não encontrar (para fins de desenvolvimento)
             return ResponseEntity.badRequest().build();
         }
     }
@@ -64,14 +65,12 @@ public class AutenticacaoController {
             return ResponseEntity.badRequest().build();
         }
     }
-@PutMapping("/perfil")
+
+    @PutMapping("/perfil")
     public ResponseEntity<UsuarioResponseDTO> atualizarPerfil(
             @RequestBody UsuarioAtualizacaoDTO dados,
-            @AuthenticationPrincipal Usuario usuarioLogado) { // <--- A Mágica acontece aqui!
+            @AuthenticationPrincipal Usuario usuarioLogado) { 
         
-        // O "usuarioLogado" é injetado automaticamente pelo Spring Security.
-        // Se chegou aqui, é certeza que ele é quem diz ser.
-
         Usuario usuarioAtualizado = usuarioService.atualizarPerfil(usuarioLogado.getEmail(), dados);
 
         return ResponseEntity.ok(new UsuarioResponseDTO(usuarioAtualizado));

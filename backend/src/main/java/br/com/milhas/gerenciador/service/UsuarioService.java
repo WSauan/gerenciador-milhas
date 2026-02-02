@@ -33,12 +33,15 @@ public class UsuarioService {
 
     @Transactional
     public Usuario cadastrar(UsuarioCadastroDTO dados) {
-        if (usuarioRepository.findByEmail(dados.email()).isPresent()) {
+        // --- ALTERAÇÃO 1: Padroniza e-mail para minúsculo antes de verificar ou salvar ---
+        String emailPadronizado = dados.email().toLowerCase();
+
+        if (usuarioRepository.findByEmail(emailPadronizado).isPresent()) {
             throw new RuntimeException("E-mail já cadastrado.");
         }
         Usuario usuario = new Usuario();
         usuario.setNome(dados.nome());
-        usuario.setEmail(dados.email());
+        usuario.setEmail(emailPadronizado); // Salva minúsculo
         usuario.setSenha(passwordEncoder.encode(dados.senha()));
         return usuarioRepository.save(usuario);
     }
@@ -50,25 +53,27 @@ public class UsuarioService {
     }
 
     @Transactional
-        public Usuario atualizarPerfil(String email, UsuarioAtualizacaoDTO dto) {
-            Usuario usuario = usuarioRepository.findByEmail(email)
-                    .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+    public Usuario atualizarPerfil(String email, UsuarioAtualizacaoDTO dto) {
+        // O email aqui já vem minúsculo do Token JWT (garantido pelo Login)
+        Usuario usuario = usuarioRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
 
-            // Só altera se não for nulo E não for vazio
-            if (dto.nome() != null && !dto.nome().isBlank()) {
-                usuario.setNome(dto.nome());
-            }
-
-            if (dto.senha() != null && !dto.senha().isBlank()) {
-                usuario.setSenha(passwordEncoder.encode(dto.senha()));
-            }
-
-            return usuario;
+        // Só altera se não for nulo E não for vazio
+        if (dto.nome() != null && !dto.nome().isBlank()) {
+            usuario.setNome(dto.nome());
         }
+
+        if (dto.senha() != null && !dto.senha().isBlank()) {
+            usuario.setSenha(passwordEncoder.encode(dto.senha()));
+        }
+
+        return usuario;
+    }
 
     @Transactional
     public void solicitarResetSenha(SolicitacaoSenhaDTO dto) {
-        Usuario usuario = usuarioRepository.findByEmail(dto.email())
+        
+        Usuario usuario = usuarioRepository.findByEmail(dto.email().toLowerCase())
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado com este e-mail."));
 
         String token = UUID.randomUUID().toString();
