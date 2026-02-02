@@ -2,6 +2,8 @@ package br.com.milhas.gerenciador.config;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
@@ -21,62 +23,78 @@ public class CargaDeDados {
             ProgramaDePontosRepository programaRepository) {
         
         return args -> {
+            // =================================================================================
             // --- CARGA DE BANDEIRAS ---
-            if (bandeiraRepository.count() == 0) {
-                List<String> bandeiras = Arrays.asList(
-                    "Visa",
-                    "Mastercard",
-                    "Elo",
-                    "American Express",
-                    "Hipercard",
-                    "Diners Club",
-                    "Discover",
-                    "JCB",
-                    "Aura",
-                    "Cabal",
-                    "Sorocred",
-                    "Mais!",
-                    "UnionPay",
-                    "Outros"
-                );
+            // =================================================================================
+            List<String> bandeirasParaCadastrar = Arrays.asList(
+                "Visa",
+                "Mastercard",
+                "Elo",
+                "American Express",
+                "Hipercard",
+                "Diners Club",
+                "Discover",
+                "JCB",
+                "Aura",
+                "Cabal",
+                "Sorocred",
+                "Mais!",
+                "UnionPay",
+                "Outros"
+            );
 
-                for (String nome : bandeiras) {
+            // 1. Busca todas as bandeiras que JÁ existem no banco para evitar duplicidade
+            Set<String> bandeirasExistentes = bandeiraRepository.findAll().stream()
+                .map(Bandeira::getNome)
+                .collect(Collectors.toSet());
+
+            // 2. Percorre a lista desejada e só salva o que não existe
+            for (String nome : bandeirasParaCadastrar) {
+                if (!bandeirasExistentes.contains(nome)) {
                     salvarBandeira(bandeiraRepository, nome);
+                    System.out.println("➕ Nova Bandeira adicionada: " + nome);
                 }
-                System.out.println("✅ Bandeiras carregadas com sucesso!");
             }
+            System.out.println("✅ Verificação de Bandeiras concluída!");
 
+            // =================================================================================
             // --- CARGA DE PROGRAMAS DE PONTOS ---
-            if (programaRepository.count() == 0) {
-                List<String> programas = Arrays.asList(
-                    "Livelo (Bradesco/BB)",
-                    "Esfera (Santander)",
-                    "Smiles (GOL)",
-                    "Latam Pass (LATAM)",
-                    "TudoAzul (Azul)",
-                    "Átomos (C6 Bank)",
-                    "Nubank Rewards / Ultravioleta",
-                    "Inter Loop (Banco Inter)",
-                    "Pontos Caixa",
-                    "Curtaí (BRB)",
-                    "Coopera (Sicoob)",
-                    "Membership Rewards (Amex)",
-                    "Iupp / Itaú Shop",
-                    "PDA (Pão de Açúcar)",
-                    "Dotz",
-                    "Km de Vantagens",
-                    "Outros"
-                );
+            // =================================================================================
+            List<String> programasParaCadastrar = Arrays.asList(
+                "Livelo (Bradesco/BB)",
+                "Esfera (Santander)",
+                "Smiles (GOL)",
+                "Latam Pass (LATAM)",
+                "TudoAzul (Azul)",
+                "Átomos (C6 Bank)",
+                "Nubank Rewards / Ultravioleta",
+                "Inter Loop (Banco Inter)",
+                "Pontos Caixa",
+                "Curtaí (BRB)",
+                "Coopera (Sicoob)",
+                "Membership Rewards (Amex)",
+                "Iupp / Itaú Shop",
+                "PDA (Pão de Açúcar)",
+                "Dotz",
+                "Km de Vantagens",
+                "Outros"
+            );
 
-                for (String nome : programas) {
+            // 1. Busca todos os programas que JÁ existem
+            Set<String> programasExistentes = programaRepository.findAll().stream()
+                .map(ProgramaDePontos::getNome)
+                .collect(Collectors.toSet());
+
+            // 2. Salva apenas os novos
+            for (String nome : programasParaCadastrar) {
+                if (!programasExistentes.contains(nome)) {
                     salvarPrograma(programaRepository, nome);
+                    System.out.println("➕ Novo Programa adicionado: " + nome);
                 }
-                System.out.println("✅ Programas de Pontos carregados com sucesso!");
             }
+            System.out.println("✅ Verificação de Programas concluída!");
         };
     }
-
-    // --- MÉTODOS AUXILIARES PARA EVITAR O ERRO DE CONSTRUTOR ---
 
     private void salvarBandeira(BandeiraRepository repo, String nome) {
         Bandeira b = new Bandeira();
@@ -86,7 +104,7 @@ public class CargaDeDados {
 
     private void salvarPrograma(ProgramaDePontosRepository repo, String nome) {
         ProgramaDePontos p = new ProgramaDePontos();
-        p.setNome(nome); // Se sua classe usar setNomePrograma, ajuste aqui
+        p.setNome(nome);
         repo.save(p);
     }
 }
