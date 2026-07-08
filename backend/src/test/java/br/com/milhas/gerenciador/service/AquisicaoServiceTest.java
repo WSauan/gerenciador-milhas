@@ -205,4 +205,18 @@ class AquisicaoServiceTest {
         verify(cartaoRepository, never()).save(any());
         verify(aquisicaoRepository, never()).delete(any());
     }
+    @Test
+    @DisplayName("Deve retornar lista vazia quando usuário não tiver aquisições")
+    void deveRetornarListaVaziaQuandoUsuarioNaoTiverAquisicoes() {
+        // Arrange
+        String email = "sem.aquisicoes@email.com";
+        when(aquisicaoRepository.findByCartaoUsuarioEmail(email)).thenReturn(Collections.emptyList());
+
+        // Act
+        List<AquisicaoResponseDTO> resultado = aquisicaoService.listarPorUsuario(email);
+
+        // Assert
+        assertNotNull(resultado);
+        assertTrue(resultado.isEmpty());
+    }
 }
